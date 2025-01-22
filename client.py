@@ -4,6 +4,8 @@ import socketio
 import datetime
 import threading
 import time
+from mainloop import mainLoop
+import button_schedule
 
 # 마지막으로 pong을 받은 시간
 last_pong_time = None
@@ -27,13 +29,40 @@ def reqAccount(data):
   print(data)
   sio.emit("revAccount", character_list)
 
+button_mapping={
+  "우편":button_schedule.postBox,
+  "격전의섬":button_schedule.dungeon,
+  "파괴된성채":button_schedule.dungeon,
+  "크루마탑":button_schedule.dungeon,
+}
+
+@sio.event
+def button_schedule(data):
+#emit_data={"버튼이름":[데이터],"character_list":[{"아이디1":핸들 값1,"아이디2":핸들 값2}]}
+  for idx, (key, value) in enumerate(data.items()):
+    if idx==0:
+      button_name=key
+      func_data=value
+    elif idx==1:
+      id_handle=value
+  
+  # 버튼에 해당하는 함수 가져오기
+  btn_func = button_mapping[button_name]
+
+  mainLoop(sio, btn_func, func_data, id_handle, button_name)
+
+  # #아래의 값들은 잘 들어옴    
+  # print("button_name: ",button_name)
+  # print("func_data: ", func_data)
+  # print("id_handle: ",id_handle)
+
+
 @sio.event
 def pong(data):
     global last_pong_time
     print(f"Received pong from server: {data['message']}")
     last_pong_time = time.time()  # pong 수신 시 갱신
-    print(last_pong_time)
-    
+
 def monitor_connection():
     global last_pong_time
     while True:
@@ -57,8 +86,6 @@ sio.connect('http://127.0.0.1:4000?computer_id=PC01')
 #백그라운드 작업 시작
 sio.start_background_task(send_ping)
 sio.start_background_task(monitor_connection)
-
-
 
 sio.wait()
 
