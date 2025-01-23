@@ -6,12 +6,36 @@ import threading
 import time
 from mainloop import mainLoop
 import button_schedule
+import queue
 
 # 마지막으로 pong을 받은 시간
 last_pong_time = None
 PONG_TIMEOUT = 4  # 초 (pong 응답 대기 시간)
 
 character_list={"데스크": "핸들값asdfasdf", "꿀당콩": "핸들값sfsda", "이해의시계": "gosemfsf", "출발의계산": "xcvxcv", "현란한에틴": "qweqwe", "기가바이트": "lkljkl", "라이젠": "bvnvbn", "라라랜드": "핸들값sfsda", "이해의수건": "gosemfsf", "합의계산": "xcvxcv"}
+
+# 작업 큐 생성
+task_queue = queue.Queue()
+
+# 작업 처리 스레드 함수
+def process_tasks():
+  while True:
+    # 큐에서 작업 가져오기
+    task = task_queue.get()
+    if task is None:
+        break  # None이 들어오면 스레드 종료
+    try:
+        # 작업 실행
+        func, args = task
+        func(*args)
+    except Exception as e:
+        print(f"Error processing task: {e}")
+    finally:
+        task_queue.task_done()
+
+# 작업 처리 스레드 시작
+worker_thread = threading.Thread(target=process_tasks, daemon=True)
+worker_thread.start()
 
 #웹소켓 통신
 sio = socketio.Client()
@@ -49,12 +73,8 @@ def button_schedule(data):
   # 버튼에 해당하는 함수 가져오기
   btn_func = button_mapping[button_name]
 
-  mainLoop(sio, btn_func, func_data, id_handle, button_name)
-
-  # #아래의 값들은 잘 들어옴    
-  # print("button_name: ",button_name)
-  # print("func_data: ", func_data)
-  # print("id_handle: ",id_handle)
+  # mainLoop 호출을 큐에 추가
+  task_queue.put((mainLoop, (sio, btn_func, func_data, id_handle, button_name)))
 
 
 @sio.event
