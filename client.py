@@ -20,18 +20,20 @@ task_queue = queue.Queue()
 # 작업 처리 스레드 함수
 def process_tasks():
   while True:
-    # 큐에서 작업 가져오기
-    task = task_queue.get()
-    if task is None:
-        break  # None이 들어오면 스레드 종료
     try:
-        # 작업 실행
-        func, args = task
-        func(*args)
+      # 큐에서 작업 가져오기
+      task = task_queue.get(timeout=10)
+      if task is None:
+        break  # None이 들어오면 스레드 종료
+      print("클라이언트 메인루프 시작")
+      # 작업 실행
+      func, args = task
+      func(*args)
+    except queue.Empty:
+      continue  # 작업이 없으면 다시 대기
     except Exception as e:
-        print(f"Error processing task: {e}")
-    finally:
-        task_queue.task_done()
+      print(f"Error processing task: {e}")
+    
 
 # 작업 처리 스레드 시작
 worker_thread = threading.Thread(target=process_tasks, daemon=True)
