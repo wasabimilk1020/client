@@ -56,10 +56,14 @@ def reqAccount(data):
   sio.emit("revAccount", character_list)
 
 button_mapping={
+  "모닝":button_schedule.dungeon,
   "우편":button_schedule.postBox,
   "격전의섬":button_schedule.dungeon,
   "파괴된성채":button_schedule.dungeon,
   "크루마탑":button_schedule.dungeon,
+  "안타라스":button_schedule.dungeon,
+  "시즌패스":button_schedule.dungeon,
+
 }
 
 @sio.event
@@ -73,6 +77,7 @@ def button_schedule(data):
       id_handle=value
   
   # 버튼에 해당하는 함수 가져오기
+  print("버튼이름: ",button_name)
   btn_func = button_mapping[button_name]
 
   # mainLoop 호출을 큐에 추가
