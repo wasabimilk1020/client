@@ -5,7 +5,7 @@ import datetime
 import threading
 import time
 from mainloop import mainLoop
-import button_schedule
+import button_func
 import queue
 
 # 마지막으로 pong을 받은 시간
@@ -56,25 +56,30 @@ def reqAccount(data):
   sio.emit("revAccount", character_list)
 
 button_mapping={
-  "모닝":button_schedule.dungeon,
-  "우편":button_schedule.postBox,
-  "격전의섬":button_schedule.dungeon,
-  "파괴된성채":button_schedule.dungeon,
-  "크루마탑":button_schedule.dungeon,
-  "안타라스":button_schedule.dungeon,
-  "시즌패스":button_schedule.dungeon,
+  "status_check_button":button_func.run_btn,  
+  "모닝":button_func.dungeon,
+  "우편":button_func.postBox,
+  "격전의섬":button_func.dungeon,
+  "파괴된성채":button_func.dungeon,
+  "크루마탑":button_func.dungeon,
+  "안타라스":button_func.dungeon,
+  "시즌패스":button_func.dungeon,
+  
 
 }
 
 @sio.event
 def button_schedule(data):
-#emit_data={"버튼이름":[데이터],"character_list":[{"아이디1":핸들 값1,"아이디2":핸들 값2}]}
+#emit_data={"버튼이름":[데이터],"character_list":{"아이디1":핸들 값1,"아이디2":핸들 값2}}
   for idx, (key, value) in enumerate(data.items()):
     if idx==0:
       button_name=key
       func_data=value
     elif idx==1:
-      id_handle=value
+      if  value=={}:
+        id_handle=character_list
+      else:
+        id_handle=value
   
   # 버튼에 해당하는 함수 가져오기
   print("버튼이름: ",button_name)
