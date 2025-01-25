@@ -64,7 +64,7 @@ button_mapping={
   "크루마탑":button_func.dungeon,
   "안타라스":button_func.dungeon,
   "시즌패스":button_func.dungeon,
-  
+  "아이템분해":button_func.decomposeItem,
 
 }
 
