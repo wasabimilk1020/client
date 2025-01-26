@@ -7,6 +7,8 @@ import time
 from mainloop import mainLoop
 import button_func
 import queue
+import hashlib
+import base64
 
 # 마지막으로 pong을 받은 시간
 last_pong_time = None
@@ -88,6 +90,21 @@ def button_schedule(data):
   # mainLoop 호출을 큐에 추가
   task_queue.put((mainLoop, (sio, btn_func, func_data, id_handle, button_name)))
 
+@sio.event
+def recvImage(data):
+  img=data[0]
+  hash_value=data[1]
+  file_name=data[2]
+  calculated_hash = hashlib.sha256(img.encode("utf-8")).hexdigest()
+  # 해시 확인
+  if hash_value==calculated_hash: 
+    print("데이터 무결성 확인 완료!")
+    image_data = base64.b64decode(img)
+    # 파일로 저장
+    with open(f"./image_files/{file_name}", "wb") as f:
+        f.write(image_data)
+  else:
+    print("데이터가 손상되었거나 무결성 검증 실패!")
 
 @sio.event
 def pong(data):
