@@ -36,7 +36,6 @@ def process_tasks():
     except Exception as e:
       print(f"Error processing task: {e}")
     
-
 # 작업 처리 스레드 시작
 worker_thread = threading.Thread(target=process_tasks, daemon=True)
 worker_thread.start()
@@ -59,14 +58,32 @@ def reqAccount(data):
 
 button_mapping={
   "status_check_button":button_func.run_btn,  
-  "모닝":button_func.dungeon,
-  "우편":button_func.postBox,
   "격전의섬":button_func.dungeon,
   "파괴된성채":button_func.dungeon,
   "크루마탑":button_func.dungeon,
   "안타라스":button_func.dungeon,
+  "상아탑":button_func.dungeon,
+  "이벤트던전":button_func.dungeon,
+  "모닝":button_func.dungeon,
+  "우편":button_func.postBox,
   "시즌패스":button_func.dungeon,
   "아이템분해":button_func.decomposeItem,
+  # "스킬북분해":button_func.decomposeItem,
+  # "아이템삭제":button_func.decomposeItem,
+  # "일괄사용":button_func.decomposeItem,
+  # "사망체크":button_func.decomposeItem,
+  # "이벤트상점":button_func.decomposeItem,
+  # "아가시온":button_func.decomposeItem,
+  # "모두":button_func.decomposeItem,
+  # "고급":button_func.decomposeItem,
+  # "희귀":button_func.decomposeItem,
+  # "40M":button_func.decomposeItem,
+  # "제한없음":button_func.decomposeItem,
+  # "바람":button_func.decomposeItem,
+  # "불":button_func.decomposeItem,
+  # "물":button_func.decomposeItem,
+  # "게임실행":button_func.decomposeItem,
+  # "다이아":button_func.decomposeItem,
 
 }
 
@@ -102,7 +119,7 @@ def recvImage(data):
     image_data = base64.b64decode(img)
     # 파일로 저장
     with open(f"./image_files/{file_name}", "wb") as f:
-        f.write(image_data)
+      f.write(image_data)
   else:
     print("데이터가 손상되었거나 무결성 검증 실패!")
 

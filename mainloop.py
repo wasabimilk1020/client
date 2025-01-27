@@ -7,11 +7,12 @@ def mainLoop(sio, btn_func, func_data, id_handle, btn_name):
     # result_window=get_window(handle)
     # if result_window is not None: #정확히 없을 때 None이 나오는지 모름 확인해보고 넣어주자
       character_name=id
-      result=btn_func(sio, func_data, btn_name)
-      if result==1:
-        sio.emit("logEvent",[f"{btn_name} 실행", character_name, STATUS_MSG])
-      elif result==0:
-        sio.emit("logEvent",[f"{btn_name} 실패", character_name, ERR_MSG])
+      sio.emit("logEvent",[f"{btn_name} 시작", character_name, STATUS_MSG])
+      result=btn_func(sio, func_data, btn_name, character_name) #result[0]=성공여부, result[1]=메세지
+      if result[0]==1:
+        sio.emit("logEvent",[f"{btn_name} 완료", character_name, STATUS_MSG])
+      elif result[0]==0:
+        sio.emit("logEvent",[f"{result[1]}", character_name, ERR_MSG])
       if idx==dict_length:
         sio.emit("stop_animation",btn_name)
     # else:
