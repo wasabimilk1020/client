@@ -273,12 +273,11 @@ def showDiamond(sio, data,btn_name, character_name):
   keyboard('x')
   text=utils.capture_text_from_region(x, y, width, height)
   numbers = re.findall(r'\d+', text)
-  print(numbers[0])
+  diamond=numbers[0]
   
-  #여기서 서버로 emit해줘야함
   escKey()  #나가기
 
-  return 1, "message:None"
+  return 3, diamond
 
 def useItem(sio, data,btn_name, character_name):
   coord=data
