@@ -55,3 +55,13 @@ def getWindow(accStatus):
     win32gui.SetForegroundWindow(accStatus)
   except Exception as e:
     print(f"Error bringing window to foreground: {e}")
+
+def capture_text_from_region(x, y, width, height):
+  # 화면의 특정 영역 캡처
+  bbox = (x, y, x + width, y + height)
+  screenshot = ImageGrab.grab(bbox)
+
+  # OCR로 문자 추출
+  text = pytesseract.image_to_string(screenshot, lang='ENG+KOR',config='--psm 4 -c preserve_interword_spaces=1')  # 언어 설정 (예: 'kor' 또는 'eng+kor')
+  return text
+

@@ -58,13 +58,14 @@ def reqAccount(data):
 
 button_mapping={
   "status_check_button":button_func.statusChk,  
+  "사냥":button_func.normalHunting,
   "격전의섬":button_func.dungeon,
   "파괴된성채":button_func.dungeon,
   "크루마탑":button_func.dungeon,
   "안타라스":button_func.dungeon,
   "상아탑":button_func.dungeon,
   "이벤트던전":button_func.dungeon,
-  "모닝":button_func.dungeon,
+  "모닝":button_func.morning,
   "우편":button_func.postBox,
   "시즌패스":button_func.dungeon,
   "아이템분해":button_func.decomposeItem,
@@ -78,13 +79,13 @@ button_mapping={
   "모두":button_func.switch_get_item,
   "고급":button_func.switch_get_item,
   "희귀":button_func.switch_get_item,
-  # "40M":button_func.decomposeItem,
-  # "제한없음":button_func.decomposeItem,
+  "40M":button_func.decomposeItem,
+  "제한없음":button_func.decomposeItem,
   # "바람":button_func.decomposeItem,
   # "불":button_func.decomposeItem,
   # "물":button_func.decomposeItem,
   # "게임실행":button_func.decomposeItem,
-  # "다이아":button_func.showDiamond,
+  "다이아":button_func.showDiamond,
 
 }
 
