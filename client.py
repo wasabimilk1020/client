@@ -9,6 +9,7 @@ import button_func
 import queue
 import hashlib
 import base64
+import get_account
 
 # 마지막으로 pong을 받은 시간
 last_pong_time = None
@@ -53,7 +54,7 @@ def disconnect():
 
 @sio.event
 def reqAccount(data):
-  print(data)
+  character_list=get_account.get_account_list(sio)
   sio.emit("revAccount", character_list)
 
 button_mapping={
@@ -67,7 +68,7 @@ button_mapping={
   "이벤트던전":button_func.dungeon,
   "모닝":button_func.morning,
   "우편":button_func.postBox,
-  "시즌패스":button_func.dungeon,
+  "시즌패스":button_func.seasonpass,
   "아이템분해":button_func.decomposeItem,
   "스킬북분해":button_func.decomposeBook,
   "아이템삭제":button_func.itemDelete,
@@ -149,7 +150,7 @@ def send_ping():
         sio.emit("ping", {"time": current_time})
         time.sleep(2)
 
-sio.connect('http://127.0.0.1:4000?computer_id=PC01')
+sio.connect('http://127.0.0.1:4000?computer_id=PC01') #클라이언트 세팅
 
 #백그라운드 작업 시작
 sio.start_background_task(send_ping)

@@ -563,3 +563,31 @@ def morning(sio, data,btn_name, character_name):
   utils.caputure_image(name, 387,258, sio) #name, x, y, sio
 
   return 1, "message:None"
+
+def seasonpass(sio, data,btn_name, character_name):
+  coord=data
+  delay=data[4]
+  name=character_name
+
+  keyboard("z") #시즌패스
+  time.sleep(2)
+
+  x = 530
+  for i in range(4):
+    region = (x, 235, 100, 60)
+    result=utils.searchImg('dailyRedDotChk.png', beforeDelay=1, afterDelay=1,justChk=True, chkCnt=2, _region=region, accuracy=0.7)
+    if result:  # result가 None이 아닌 경우
+      randClick(result.left-100, result.top+30,10,10,0)
+      while(True):
+        result=utils.searchImg('getSeason.png', beforeDelay=1, afterDelay=0.5,_region=(1110,330,350,150))
+        if(result==0):
+          randClick(1325,825,10,10,0)
+          result=utils.searchImg('confirm.png', beforeDelay=1, afterDelay=0, _region=(920,580,300,200),accuracy=0.9)
+          break
+    x += 230 #y축 80씩 증가
+
+  utils.caputure_image(name, 1175,365, sio) #name, x, y, sio
+  
+  escKey()  #나가기
+
+  return 1, "message:None"
