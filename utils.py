@@ -44,6 +44,7 @@ def caputure_image(name,x,y,sio):
   nowDatetime=now.strftime('%H:%M')
   data=[name, nowDatetime, captureImg] 
   sio.emit("captured_image",data)
+  time.sleep(0.2)
 
 def getWindow(accStatus):
   # winKey()

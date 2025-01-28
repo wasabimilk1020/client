@@ -120,23 +120,18 @@ def switch_get_item(sio, data, btn_name, character_name):
   name=character_name
 
   keyboard("x") #환경설정
-  time.sleep(1)
-
+  result=utils.searchImg('setting_get_btn.png', beforeDelay=1, afterDelay=1, _region=(355,370,200,200))
+  if(result==0):
+    return 0, "세팅 획득 버튼클릭 실패"
+  
   if btn_name=="모두":
-    result=utils.searchImg('setting_get_btn.png', beforeDelay=1, afterDelay=1, _region=(355,370,200,200))
-    if(result==0):
-      return 0, "세팅 획득 버튼클릭 실패"
-
     result=utils.searchImg('allItem.png', beforeDelay=1, afterDelay=1, _region=(1210,360,200,150))
     if(result==0):
       return 0, "모두 클릭 실패"
     
     utils.caputure_image(name, 1295, 400, sio) #name, x, y, sio
-  elif btn_name=="고급":
-    result=utils.searchImg('setting_get_btn.png', beforeDelay=1, afterDelay=1, _region=(355,370,200,200))
-    if(result==0):
-      return 0, "세팅 획득 버튼클릭 실패"
 
+  elif btn_name=="고급":
     result=utils.searchImg('greenItem.png', beforeDelay=1, afterDelay=1, _region=(1015,400,200,150))
     if(result==0):
       return 0, "고급 클릭 실패"
@@ -144,10 +139,6 @@ def switch_get_item(sio, data, btn_name, character_name):
     utils.caputure_image(name, 1120, 450, sio) #name, x, y, sio
 
   elif btn_name=="희귀":
-    result=utils.searchImg('setting_get_btn.png', beforeDelay=1, afterDelay=1, _region=(355,370,200,200))
-    if(result==0):
-      return 0, "세팅 획득 버튼클릭 실패"
-
     result=utils.searchImg('blueItem.png', beforeDelay=1, afterDelay=1, _region=(1190,400,200,150))
     if(result==0):
       return 0, "희귀 클릭 실패"
@@ -158,6 +149,186 @@ def switch_get_item(sio, data, btn_name, character_name):
   return 1, "message:None"
 
 def decomposeItem(sio, data,btn_name, character_name):
-  print(f"{btn_name} 실행")
+  coord=data
+  delay=data[4]
+  name=character_name
+
+  keyboard("0") #분해
   time.sleep(1)
+
+  randClick(1480,735,5,5,0) #분해 목록
+  randClick(1395,730,10,10,0) #분해 목록 확인
+  randClick(1321,735,5,5,0) #분해
+
+  result=utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, _region=(920,580,300,200))
+  if(result==0):  
+    utils.caputure_image(name, 1280, 340, sio) #name, x, y, sio
+    return 0, "분해 확인 클릭 실패"
+  
+  utils.caputure_image(name, 1280, 340, sio) #name, x, y, sio
+
+  escKey()  #나가기
+
   return 1, "message:None"
+
+def decomposeBook(sio, data,btn_name, character_name):
+  coord=data
+  delay=data[4]
+  name=character_name
+
+  keyboard("9") #분해
+  time.sleep(1)
+
+  randClick(1480,735,5,5,0) #분해 목록
+  randClick(1395,730,10,10,0) #분해 목록 확인
+  randClick(1321,735,5,5,0) #분해
+
+  result=utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, _region=(920,580,300,200))
+  if(result==0):  
+    utils.caputure_image(name, 1280, 340, sio) #name, x, y, sio
+    return 0, "분해 확인 클릭 실패"
+  
+  utils.caputure_image(name, 1280, 340, sio) #name, x, y, sio
+
+  escKey()  #나가기
+
+  return 1, "message:None"
+  
+def deathChk(sio, data,btn_name, character_name):
+  coord=data
+  delay=data[4]
+  name=character_name
+
+  utils.caputure_image(name, 1145, 195, sio) #name, x, y, sio
+
+  return 1, "사망체크 완료"
+
+def showDiamond(sio, data,btn_name, character_name):
+  coord=data
+  delay=data[4]
+  name=character_name
+
+  #이거는 텍스트 인식으로 만들어줘야함
+
+  return 1, "다이아체크 완료"
+
+def useItem(sio, data,btn_name, character_name):
+  coord=data
+  delay=data[4]
+  name=character_name
+  
+  keyboard('i') #인벤토리
+  randClick(1520,735,5,5,0) 
+  randClick(1450,520,10,5,0)  #일괄사용 클릭
+
+  randClick(1305,680,5,5,0)
+ 
+  randClick(1405,740,5,5,10) 
+
+  return 1, "일괄사용 완료"
+
+def agasion(sio, data,btn_name, character_name):
+  coord=data
+  delay=data[4]
+  name=character_name
+
+  keyboard("i")
+  randClick(1220,460,5,5,0)
+
+  while True:
+    randClick(1290,505,5,5,0)
+    randClick(1290,505,5,5,2)
+    result=utils.searchImg('agasionFirstChk.png', beforeDelay=1, afterDelay=1, justChk=True, _region=(800,750,300,200))
+    if(result==0):
+      break
+    for j in range(30):
+      keyboard("y")
+      time.sleep(1)
+      keyboard("y")
+      result=searchImg('agasionExit.png', chkCnt=3,_region=(830,775,300,140))
+      result=utils.searchImg('agasionExit.png', beforeDelay=1, afterDelay=1, chkCnt=3,_region=(830,775,300,140))
+      if(result==1):
+        break
+
+  return 1, "아가시온 완료"
+
+def itemDelete(sio, data,btn_name, character_name):
+  coord=data
+  delay=data[4]
+  name=character_name
+  
+  keyboard("i")
+  randClick(1225,405,5,5,0)
+  randClick(1365,355,5,5,0)
+  randClick(1305,740,5,5,0)
+  randClick(1030,705,5,5,0)
+  randClick(1055,655,5,5,0)
+
+  randClick(1295,355,5,5,0)
+  randClick(1305,740,5,5,0)
+  randClick(1030,705,5,5,0)
+  randClick(1055,655,5,5,2)
+
+  result=searchImg('chk.png', justChk=True, chkCnt=10,_region=(910,180,230,70))
+  result=utils.searchImg('chk.png', beforeDelay=1, afterDelay=1, justChk=True, chkCnt=10,_region=(910,180,230,70))
+  if(result==0):
+    return 0, "아이템 삭제 실패"
+  
+  return 1, "아이템 삭제 완료"
+
+def paper(sio, data,btn_name, character_name):
+  coord=data
+  delay=data[4]
+  name=character_name
+  
+  keyboard("i")
+  randClick(1225,405,10,10,0)
+  randClick(1439,355,10,10,0)
+  randClick(1373,737,5,5,0)
+  result=utils.searchImg('paper_make.png', beforeDelay=1, afterDelay=1, _region=(1255,488,200,100))
+  if(result==0):
+    return 0, "신탁서 제작 클릭 실패"
+
+  randClick(1230,475,5,5,2)
+
+  for i in range(6):
+    randClick(630,345,10,10,0)
+    randClick(1050,825,5,5,0) #max클릭
+    randClick(1450,825,10,10,1) #제작클릭
+
+    result=utils.searchImg('createCancel.png', beforeDelay=1, afterDelay=1, justChk=True, _region=(1340,765,300,200))
+    if(result==0):
+      break
+    time.sleep(3)
+    randClick(945,820,10,10,1)
+    randClick(945,820,10,10,0)
+
+  escKey()  #나가기
+  
+  return 1, "신탁서 완료"
+
+def event_store(sio, data,btn_name, character_name):
+  coord=data
+  delay=data[4]
+  name=character_name
+
+  keyboard('7')
+  
+  result=utils.searchImg('regina.png', beforeDelay=1, afterDelay=3, chkCnt=10)  #이미지 파일 evetn_store로 이름 바꾸자
+  if(result==0):
+    return 0, "레지나 클릭 실패"
+    
+  result=utils.searchImg('dailyProduct.png', beforeDelay=1, afterDelay=1, chkCnt=30)  #이미지 파일 evetn_store로 이름 바꾸자
+  if(result==0):
+    return 0, "일일상품담기 실패"
+  
+  for i in range(8):
+    randClick(490,465,10,10,0)
+
+  randClick(1475,830,5,5,0) #구매 결정
+  randClick(1050,650,5,5,0)
+  escKey()
+
+  utils.caputure_image(name, 387, 258, sio) #name, x, y, sio
+
+  return 1, "도구리사냥완료"

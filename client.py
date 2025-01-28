@@ -68,12 +68,13 @@ button_mapping={
   "우편":button_func.postBox,
   "시즌패스":button_func.dungeon,
   "아이템분해":button_func.decomposeItem,
-  # "스킬북분해":button_func.decomposeItem,
-  # "아이템삭제":button_func.decomposeItem,
-  # "일괄사용":button_func.decomposeItem,
-  # "사망체크":button_func.decomposeItem,
-  # "이벤트상점":button_func.decomposeItem,
-  # "아가시온":button_func.decomposeItem,
+  "스킬북분해":button_func.decomposeBook,
+  "아이템삭제":button_func.itemDelete,
+  "일괄사용":button_func.useItem,
+  "사망체크":button_func.deathChk,
+  "신탁서":button_func.paper,
+  "이벤트상점":button_func.event_store,
+  "아가시온":button_func.agasion,
   "모두":button_func.switch_get_item,
   "고급":button_func.switch_get_item,
   "희귀":button_func.switch_get_item,
@@ -83,7 +84,7 @@ button_mapping={
   # "불":button_func.decomposeItem,
   # "물":button_func.decomposeItem,
   # "게임실행":button_func.decomposeItem,
-  # "다이아":button_func.decomposeItem,
+  # "다이아":button_func.showDiamond,
 
 }
 
