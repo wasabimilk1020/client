@@ -57,7 +57,7 @@ def reqAccount(data):
   sio.emit("revAccount", character_list)
 
 button_mapping={
-  "status_check_button":button_func.run_btn,  
+  "status_check_button":button_func.statusChk,  
   "격전의섬":button_func.dungeon,
   "파괴된성채":button_func.dungeon,
   "크루마탑":button_func.dungeon,
@@ -74,9 +74,9 @@ button_mapping={
   # "사망체크":button_func.decomposeItem,
   # "이벤트상점":button_func.decomposeItem,
   # "아가시온":button_func.decomposeItem,
-  # "모두":button_func.decomposeItem,
-  # "고급":button_func.decomposeItem,
-  # "희귀":button_func.decomposeItem,
+  "모두":button_func.switch_get_item,
+  "고급":button_func.switch_get_item,
+  "희귀":button_func.switch_get_item,
   # "40M":button_func.decomposeItem,
   # "제한없음":button_func.decomposeItem,
   # "바람":button_func.decomposeItem,

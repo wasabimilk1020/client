@@ -3,6 +3,8 @@ import time
 import pyautogui
 import datetime
 import base64
+import shell
+import win32gui
 
 #이미지 서치
 def searchImg(imgTitle, beforeDelay, afterDelay, justChk=False, coord=[], chkCnt=5, _region=(300, 125, 1370, 790), accuracy=0.85):
@@ -33,7 +35,7 @@ def searchImg(imgTitle, beforeDelay, afterDelay, justChk=False, coord=[], chkCnt
       return 0 
   return 0  
 
-def caputure_image(name,x,y):
+def caputure_image(name,x,y,sio):
   pyautogui.screenshot(f"image_files\capture_img\{name}.png", region=(x,y,50,30))
   with open(f"image_files\capture_img\{name}.png", "rb") as f:
     b64_string = base64.b64encode(f.read())
@@ -41,6 +43,14 @@ def caputure_image(name,x,y):
   now = datetime.datetime.now()
   nowDatetime=now.strftime('%H:%M')
   data=[name, nowDatetime, captureImg] 
-  time.sleep(0.2)
-  return data
-  # sio.emit("captured_image",data)
+  sio.emit("captured_image",data)
+
+def getWindow(accStatus):
+  # winKey()
+  startClick(0,0,0,0,0)
+  time.sleep(0.1)
+  shell.SendKeys('%')
+  try:
+    win32gui.SetForegroundWindow(accStatus)
+  except Exception as e:
+    print(f"Error bringing window to foreground: {e}")
