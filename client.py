@@ -10,12 +10,13 @@ import queue
 import hashlib
 import base64
 import get_account
+import serial_comm
 
 # 마지막으로 pong을 받은 시간
 last_pong_time = None
 PONG_TIMEOUT = 4  # 초 (pong 응답 대기 시간)
 
-character_list={"데스크": "핸들값asdfasdf", "꿀당콩": "핸들값sfsda", "이해의시계": "gosemfsf", "출발의계산": "xcvxcv", "현란한에틴": "qweqwe", "기가바이트": "lkljkl", "라이젠": "bvnvbn", "라라랜드": "핸들값sfsda", "이해의수건": "gosemfsf", "합의계산": "xcvxcv"}
+character_list={}
 
 # 작업 큐 생성
 task_queue = queue.Queue()
@@ -47,10 +48,15 @@ sio = socketio.Client()
 @sio.event
 def connect():
   print('connection established')   
+  # sio.start_background_task(send_ping)
 
 @sio.event
 def disconnect():
   print("서버와 연결 끊김")
+  if serial_comm.ser.isOpen():
+    serial_comm.ser.flushInput()
+    serial_comm.ser.flushOutput()
+    serial_comm.ser.close()
 
 @sio.event
 def reqAccount(data):
@@ -150,11 +156,11 @@ def send_ping():
         sio.emit("ping", {"time": current_time})
         time.sleep(2)
 
-sio.connect('http://127.0.0.1:4000?computer_id=PC01') #클라이언트 세팅
+sio.connect('http://121.191.160.160:426?computer_id=PC01') #클라이언트 세팅
 
-#백그라운드 작업 시작
-sio.start_background_task(send_ping)
 sio.start_background_task(monitor_connection)
+sio.start_background_task(send_ping)
+
 
 sio.wait()
 

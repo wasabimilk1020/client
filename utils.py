@@ -3,8 +3,13 @@ import time
 import pyautogui
 import datetime
 import base64
-import shell
+import win32com.client
+shell = win32com.client.Dispatch("WScript.Shell")
 import win32gui
+from serial_comm import *
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+from PIL import ImageGrab
 
 #이미지 서치
 def searchImg(imgTitle, beforeDelay, afterDelay, justChk=False, coord=[], chkCnt=5, _region=(300, 125, 1370, 790), accuracy=0.85):
@@ -14,7 +19,7 @@ def searchImg(imgTitle, beforeDelay, afterDelay, justChk=False, coord=[], chkCnt
     loopCnt += 1
     try:
       time.sleep(beforeDelay)
-      result = pyautogui.locateOnScreen("./img/" + imgTitle, region=_region, confidence=accuracy)
+      result = pyautogui.locateOnScreen("./image_files/" + imgTitle, region=_region, confidence=accuracy)
 
       # 이미지 찾기 성공
       if coord:  # 이미지가 아닌 다른 곳 클릭 시
@@ -36,6 +41,7 @@ def searchImg(imgTitle, beforeDelay, afterDelay, justChk=False, coord=[], chkCnt
   return 0  
 
 def caputure_image(name,x,y,sio):
+  time.sleep(0.2)
   pyautogui.screenshot(f"image_files\capture_img\{name}.png", region=(x,y,50,30))
   with open(f"image_files\capture_img\{name}.png", "rb") as f:
     b64_string = base64.b64encode(f.read())
@@ -44,7 +50,6 @@ def caputure_image(name,x,y,sio):
   nowDatetime=now.strftime('%H:%M')
   data=[name, nowDatetime, captureImg] 
   sio.emit("captured_image",data)
-  time.sleep(0.2)
 
 def getWindow(accStatus):
   # winKey()
@@ -61,7 +66,12 @@ def capture_text_from_region(x, y, width, height):
   bbox = (x, y, x + width, y + height)
   screenshot = ImageGrab.grab(bbox)
 
+  # 전처리: 흑백 변환 및 대비 증가
+  grayscale = screenshot.convert("L")  # 흑백 이미지로 변환
+  # enhanced = ImageEnhance.Contrast(grayscale).enhance(2.0)  # 대비 조정
+  # binary = enhanced.point(lambda x: 0 if x < 128 else 255, '1')  # 이진화 처리
+
   # OCR로 문자 추출
-  text = pytesseract.image_to_string(screenshot, lang='ENG+KOR',config='--psm 4 -c preserve_interword_spaces=1')  # 언어 설정 (예: 'kor' 또는 'eng+kor')
+  text = pytesseract.image_to_string(grayscale, lang='kor',config='--psm 7 -c preserve_interword_spaces=1')  
   return text
 

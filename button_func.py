@@ -1,5 +1,7 @@
 import time
 import utils
+from serial_comm import *
+import re
 
 #data=[1142, 375, 10, 10, 0.0]=[x,y,xRange,yRange,delay]
 def statusChk(sio, data,btn_name, character_name):
@@ -66,7 +68,7 @@ def postBox(sio, data,btn_name, character_name):
   if(result==0):  
     return 0, "우편 모두받기 실패"
 
-  result=utils.searchImg('confirm.png',beforeDelay=1, afterDelay=0, accuracy=0.9, _region=(920,580,300,200))
+  result=utils.searchImg('confirm.png',beforeDelay=1, afterDelay=1, accuracy=0.9, _region=(920,580,300,200))
   if(result==0):  
     return 0, "우편 확인 클릭 실패"
 
@@ -268,7 +270,7 @@ def showDiamond(sio, data,btn_name, character_name):
   delay=data[4]
   name=character_name
 
-  x, y, width, height =  895, 195, 50, 35 #다이아몬드 범위
+  x, y, width, height =  891, 190, 55, 35 #다이아몬드 범위
 
   keyboard('x')
   text=utils.capture_text_from_region(x, y, width, height)
@@ -312,7 +314,7 @@ def agasion(sio, data,btn_name, character_name):
       keyboard("y")
       time.sleep(1)
       keyboard("y")
-      result=searchImg('agasionExit.png', beforeDelay=1, afterDelay=1, chkCnt=3,_region=(830,775,300,140))
+      result=utils.searchImg('agasionExit.png', beforeDelay=1, afterDelay=1, chkCnt=3,_region=(830,775,300,140))
       result=utils.searchImg('agasionExit.png', beforeDelay=1, afterDelay=1, chkCnt=3,_region=(830,775,300,140))
       if(result==1):
         break
@@ -336,7 +338,6 @@ def itemDelete(sio, data,btn_name, character_name):
   randClick(1030,705,5,5,0)
   randClick(1055,655,5,5,2)
 
-  result=searchImg('chk.png', beforeDelay=1, afterDelay=1, justChk=True, chkCnt=10,_region=(910,180,230,70))
   result=utils.searchImg('chk.png', beforeDelay=1, afterDelay=1, justChk=True, chkCnt=10,_region=(910,180,230,70))
   if(result==0):
     return 0, "아이템 삭제 실패"
@@ -454,17 +455,14 @@ def daily(sio, data,btn_name, character_name):
   y = 255
   for i in range(6):
     region = (1530, y, 100, 70)
-    try:
-      result=utils.searchImg('dailyRedDotChk.png', beforeDelay=1, afterDelay=1, justChk=True, chkCnt=2, _region=region) 
-      if result:
-        randClick(result.left-100, result.top+30,10,10,0)
-        result=utils.searchImg('accept.png', beforeDelay=1, afterDelay=1, _region=(1075,470,400,200)) 
-        if(result==1):
-          result=utils.searchImg('confirm.png', beforeDelay=1, afterDelay=0, _region=(920,580,300,200)) 
-    except pyautogui.ImageNotFoundException:
-      print("ImageNotFoundException: Image could not be found.")
-    except Exception as e:
-      print(f"An unexpected error occurred: {e}")
+    
+    result=utils.searchImg('dailyRedDotChk.png', beforeDelay=1, afterDelay=1, justChk=True, chkCnt=2, _region=region) 
+    if result:
+      randClick(result.left-100, result.top+30,10,10,0)
+      result=utils.searchImg('accept.png', beforeDelay=1, afterDelay=1, _region=(1075,470,400,200)) 
+      if(result==1):
+        result=utils.searchImg('confirm.png', beforeDelay=1, afterDelay=0, _region=(920,580,300,200)) 
+   
     y += 80 #y축 80씩 증가
  
   #데일리 나가기
