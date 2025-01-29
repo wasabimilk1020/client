@@ -2,6 +2,9 @@ import win32gui
 import utils
 import serial_comm
 import time
+import check_hunting
+from waking_from_sleep import *
+from go_to_sleep import *
 
 ERR_MSG = 0
 STATUS_MSG = 1
@@ -11,24 +14,24 @@ def mainLoop(sio, btn_func, func_data, id_handle, btn_name):
   for idx, (id, handle) in enumerate(id_handle.items()):
     character_name=id
     if win32gui.IsWindow(handle):
-      sio.emit("logEvent",[f"{btn_name} 시작", character_name, STATUS_MSG])
+      sio.emit("logEvent",[f"{btn_name} 시작", character_name, STATUS_MSG]) 
 
       utils.getWindow(handle) #윈도우 얻음
-      #절전모드 해제 
-      if btn_name != "status_check_button":
-        dragValues={'fromStartX':900, 'toStartX':1015,'fromStartY':590,'toStartY':620,'fromEndX':860, 'toEndX':1000,'fromEndY':325,'toEndY':345}
-        serial_comm.mouseDrag(dragValues)
-        time.sleep(2)   #실제로는 열렸는지 확인하는 코드 넣어야됨
+
+      #절전해제 및 사망체크
+      result=waking_from_sleep_and_deathChk(btn_name)
+      if result==1: #사망 체크를 수행 했는대 chk.png가 확인 안되서 실패
+        sio.emit("logEvent",["페널티 체크 루틴 실패", character_name, ERR_MSG])
+        continue
+
       result=btn_func(sio, func_data, btn_name, character_name) #result[0]=성공여부, result[1]=메세지
       message=result[1]
 
       if result[0]==0:
         sio.emit("logEvent",[message, character_name, ERR_MSG])
       elif result[0]==1:  #일반루틴 완료메세지
-        sio.emit("logEvent",[f"{btn_name} 완료", character_name, STATUS_MSG])
         #절전모드
-        serial_comm.keyboard('g')
-        serial_comm.randClick(960,535,20,20,1)
+        go_to_sleep_and_huntingChk(btn_name, character_name, sio)
       elif result[0]==2:  #statusChk 완료메세지
         sio.emit("logEvent",[f"{message} 완료", character_name, STATUS_MSG])
       elif result[0]==3:  #diamond 완료메세지
@@ -37,10 +40,8 @@ def mainLoop(sio, btn_func, func_data, id_handle, btn_name):
         data.append(diamond)
         data.append(character_name)
         sio.emit("get_diamond",data)
-        sio.emit("logEvent",["다이아몬드 완료", character_name, STATUS_MSG])
         #절전모드
-        serial_comm.keyboard('g')
-        serial_comm.randClick(960,535,20,20,1)
+        go_to_sleep_and_huntingChk(btn_name, character_name, sio)
       if idx==dict_length:
         sio.emit("stop_animation",btn_name)
     else:

@@ -37,6 +37,7 @@ def process_tasks():
       continue  # 작업이 없으면 다시 대기
     except Exception as e:
       print(f"Error processing task: {e}")
+      # Error processing task: list index out of range (이런 에러가 나는데 왜 나지? 케릭 하나를 실행 해서 완료 후 다른 케릭 실행하면 이러네)
     
 # 작업 처리 스레드 시작
 worker_thread = threading.Thread(target=process_tasks, daemon=True)
@@ -47,12 +48,22 @@ sio = socketio.Client()
 
 @sio.event
 def connect():
+  global last_pong_time
   print('connection established')   
-  # sio.start_background_task(send_ping)
+
+  #서버가 다시 연결되었을 때 타이머 초기화 (이전 타이머 값이 남아있을 경우 방지)
+  last_pong_time = time.time()
+
+  #연결이 완전히 완료될 때까지 대기
+  while not sio.connected:
+      time.sleep(0.1)  # 100ms 간격으로 체크
+  sio.start_background_task(monitor_connection)
+  sio.start_background_task(send_ping)
 
 @sio.event
 def disconnect():
   print("서버와 연결 끊김")
+  last_pong_time = None #퐁 타임 초기화화
   if serial_comm.ser.isOpen():
     serial_comm.ser.flushInput()
     serial_comm.ser.flushOutput()
@@ -135,7 +146,7 @@ def recvImage(data):
 @sio.event
 def pong(data):
     global last_pong_time
-    print(f"Received pong from server: {data['message']}")
+    print(f"Received pong from server: {data['time']}")
     last_pong_time = time.time()  # pong 수신 시 갱신
 
 def monitor_connection():
@@ -158,12 +169,6 @@ def send_ping():
 
 sio.connect('http://121.191.160.160:426?computer_id=PC01') #클라이언트 세팅
 
-sio.start_background_task(monitor_connection)
-sio.start_background_task(send_ping)
-
-
 sio.wait()
 
-
-
-
+#절전모드 시 멈춰있으면 사냥을 하게 만들어줘야함. 지금은 그냥 "멈춰있음" 로그 발생 시키고 맘맘

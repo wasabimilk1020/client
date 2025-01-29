@@ -40,7 +40,6 @@ def randClick(xVal, yVal, xRange, yRange, clkSleep):
         while True:
             if ser.in_waiting > 0:
                 ret = ser.readline()
-                print("serialRead: ", ret.decode("utf-8"))
                 break
 
         time.sleep(clkSleep)
@@ -87,7 +86,6 @@ def randClickRight(xVal, yVal, xRange, yRange, clkSleep):
         while True:
             if ser.in_waiting > 0:
                 ret = ser.readline()
-                print("serialRead: ", ret.decode("utf-8"))
                 break
 
         time.sleep(clkSleep)
@@ -120,7 +118,6 @@ def mouseDrag(dragValues):
         while True:
             if ser.in_waiting > 0:
                 ret = ser.readline()
-                print("serialRead: ", ret.decode("utf-8"))
                 break
     except Exception as e:
         print(f"Error: {e}")
@@ -146,7 +143,6 @@ def keyboard(input):
         while True:
             if ser.in_waiting > 0:
                 ret = ser.readline()
-                print("serialRead: ", ret.decode("utf-8"))
                 break
     except Exception as e:
         print(f"Error: {e}")
@@ -190,7 +186,6 @@ def startClick(xVal, yVal, xRange, yRange, clkSleep):
         while True:
             if ser.in_waiting > 0:
                 ret = ser.readline()
-                print("serialRead: ", ret.decode("utf-8"))
                 break
         time.sleep(clkSleep)
     except Exception as e:
@@ -218,7 +213,6 @@ def winKey():
         while True:
             if ser.in_waiting > 0:
                 ret = ser.readline()
-                print("serialRead: ", ret.decode("utf-8"))
                 break
     except Exception as e:
         print(f"Error: {e}")
@@ -245,7 +239,6 @@ def winKey_1():
         while True:
             if ser.in_waiting > 0:
                 ret = ser.readline()
-                print("serialRead: ", ret.decode("utf-8"))
                 break
     except Exception as e:
         print(f"Error: {e}")
@@ -271,7 +264,6 @@ def escKey():
         while True:
             if ser.in_waiting > 0:
                 ret = ser.readline()
-                print("serialRead: ", ret.decode("utf-8"))
                 break
     except Exception as e:
         print(f"Error: {e}")
@@ -296,7 +288,6 @@ def enterKey():
         while True:
             if ser.in_waiting > 0:
                 ret = ser.readline()
-                print("serialRead: ", ret.decode("utf-8"))
                 break
     except Exception as e:
         print(f"Error: {e}")
@@ -319,7 +310,6 @@ def win_left():
       while True:
           if ser.in_waiting > 0:
               ret = ser.readline()
-              print("serialRead: ", ret.decode("utf-8"))
               break
     except Exception as e:
         print(f"Error: {e}")

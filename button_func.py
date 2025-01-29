@@ -2,6 +2,7 @@ import time
 import utils
 from serial_comm import *
 import re
+import check_hunting
 
 #data=[1142, 375, 10, 10, 0.0]=[x,y,xRange,yRange,delay]
 def statusChk(sio, data,btn_name, character_name):
@@ -9,18 +10,13 @@ def statusChk(sio, data,btn_name, character_name):
   delay=data[4]
   name=character_name
   
-  x, y, width, height = 835, 660, 250, 60 #자동 사냥 범위
-  utils.capture_text_from_region(x, y, width, height)
-
-  for i in range(5):
-    text=utils.capture_text_from_region(x, y, width, height)
-    if text == "자동 사냥 중" or text == "스케줄 자동 진행 중":
-      return 2, text
-    time.sleep(0.3)
-    
-  result=normalHunting(sio, data,btn_name, character_name)
-
-  return result
+  value=check_hunting.checkHunting() #value=성공 시=문자열, 실패 시=0
+  if value!=0:  #성공
+    text=value
+    return 2, text
+  else: #실패 (사냥을 하지 않고 있다는 뜻뜻)
+    result=normalHunting(sio, data,btn_name, character_name)
+    return result
 
 def normalHunting(sio, data,btn_name, character_name):
   coord=data
@@ -31,9 +27,9 @@ def normalHunting(sio, data,btn_name, character_name):
 
   result=utils.searchImg('schedule_in_progress.png',beforeDelay=1, afterDelay=1, justChk=True, _region=(930,320,200,200))
   if(result==0):
-    result=utils.searchImg('schedule_start.png',beforeDelay=1, afterDelay=1, justChk=True,_region=(1200,790,200,200))
+    result=utils.searchImg('schedule_start.png',beforeDelay=1, afterDelay=1, chkCnt=2, justChk=True,_region=(1200,790,200,200))
     if(result==0):
-      result=utils.searchImg('clk_schedule_start.png',beforeDelay=1, afterDelay=3, _region=(1260,790,300,100))
+      result=utils.searchImg('clk_schedule_start.png',beforeDelay=1, afterDelay=3, chkCnt=2, _region=(1260,790,300,100))
       if(result==0):
         return 0, "스케쥴 시작 실패"
     else:
@@ -222,14 +218,9 @@ def decomposeItem(sio, data,btn_name, character_name):
   randClick(1395,730,10,10,0) #분해 목록 확인
   randClick(1321,735,5,5,0) #분해
 
-  result=utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, _region=(920,580,300,200))
-  if(result==0):  
-    utils.caputure_image(name, 1280, 340, sio) #name, x, y, sio
-    return 0, "분해 확인 클릭 실패"
+  utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, _region=(920,580,300,200))
   
   utils.caputure_image(name, 1280, 340, sio) #name, x, y, sio
-
-  escKey()  #나가기
 
   return 1, "message:None"
 
@@ -245,14 +236,9 @@ def decomposeBook(sio, data,btn_name, character_name):
   randClick(1395,730,10,10,0) #분해 목록 확인
   randClick(1321,735,5,5,0) #분해
 
-  result=utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, _region=(920,580,300,200))
-  if(result==0):  
-    utils.caputure_image(name, 1280, 340, sio) #name, x, y, sio
-    return 0, "분해 확인 클릭 실패"
+  utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, _region=(920,580,300,200))
   
   utils.caputure_image(name, 1280, 340, sio) #name, x, y, sio
-
-  escKey()  #나가기
 
   return 1, "message:None"
   
@@ -271,11 +257,14 @@ def showDiamond(sio, data,btn_name, character_name):
   name=character_name
 
   x, y, width, height =  891, 190, 55, 35 #다이아몬드 범위
+  config="--psm 7 -c tessedit_char_whitelist=0123456789,"
 
   keyboard('x')
-  text=utils.capture_text_from_region(x, y, width, height)
-  numbers = re.findall(r'\d+', text)
-  diamond=numbers[0]
+  time.sleep(1.5)
+
+  text=utils.capture_text_from_region(x, y, width, height, config)
+  numbers = ''.join(re.findall(r'\d+', re.sub(r"[.,]", "", text)))  #문자와 , . 제거 후 숫자만 남김김
+  diamond=numbers
   
   escKey()  #나가기
 

@@ -9,7 +9,7 @@ import win32gui
 from serial_comm import *
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-from PIL import ImageGrab
+from PIL import ImageGrab,ImageEnhance,Image,ImageOps
 
 #이미지 서치
 def searchImg(imgTitle, beforeDelay, afterDelay, justChk=False, coord=[], chkCnt=5, _region=(300, 125, 1370, 790), accuracy=0.85):
@@ -20,6 +20,10 @@ def searchImg(imgTitle, beforeDelay, afterDelay, justChk=False, coord=[], chkCnt
     try:
       time.sleep(beforeDelay)
       result = pyautogui.locateOnScreen("./image_files/" + imgTitle, region=_region, confidence=accuracy)
+      
+      if result is None:  # 이미지 찾기 실패
+        time.sleep(chkInterval)
+        continue
 
       # 이미지 찾기 성공
       if coord:  # 이미지가 아닌 다른 곳 클릭 시
@@ -61,17 +65,28 @@ def getWindow(accStatus):
   except Exception as e:
     print(f"Error bringing window to foreground: {e}")
 
-def capture_text_from_region(x, y, width, height):
+def capture_text_from_region(x, y, width, height, _config):
   # 화면의 특정 영역 캡처
   bbox = (x, y, x + width, y + height)
   screenshot = ImageGrab.grab(bbox)
-
+  screenshot.save("test1.png")
   # 전처리: 흑백 변환 및 대비 증가
   grayscale = screenshot.convert("L")  # 흑백 이미지로 변환
-  # enhanced = ImageEnhance.Contrast(grayscale).enhance(2.0)  # 대비 조정
-  # binary = enhanced.point(lambda x: 0 if x < 128 else 255, '1')  # 이진화 처리
+  grayscale.save("test2.png")
+  enhanced = ImageEnhance.Contrast(grayscale).enhance(2.0)  # 대비 조정
+  enhanced.save("test3.png")
+  binary = enhanced.point(lambda x: 0 if x < 128 else 255, '1')  # 이진화 처리
+  binary.save("test4.png")
+  # 크기 키우기 (2배 확대)
+  scaled = binary.resize((binary.width * 2, binary.height * 2), Image.Resampling.LANCZOS)
+  scaled.save("test5.png")  # 크기 조정된 이미지 저장
+
+  # 이미지 반전
+  inverted_image = ImageOps.invert(scaled)
+  inverted_image.save("test6.png")
 
   # OCR로 문자 추출
-  text = pytesseract.image_to_string(grayscale, lang='kor',config='--psm 7 -c preserve_interword_spaces=1')  
+  text = pytesseract.image_to_string(inverted_image, lang='kor',config=_config)  
+
   return text
 

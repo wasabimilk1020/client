@@ -42,7 +42,7 @@ def get_account_list(sio):
     dragValues={'fromStartX':900, 'toStartX':1015,'fromStartY':590,'toStartY':620,'fromEndX':860, 'toEndX':1000,'fromEndY':325,'toEndY':345}
     mouseDrag(dragValues)
     time.sleep(2)   #실제로는 열렸는지 확인하는 코드 넣어야됨
-    
+
     keyboard('x')
     time.sleep(1)
     result=utils.searchImg('information.png',beforeDelay=1, afterDelay=1, _region=(1330, 225, 200, 100))
@@ -51,9 +51,10 @@ def get_account_list(sio):
       return
     
     x, y, width, height = 1205, 330, 130, 45
+    config="--psm 7 -c preserve_interword_spaces=1"
     # 문자 추출 실행
     for i in range(5):
-      extracted_text = utils.capture_text_from_region(x, y, width, height)
+      extracted_text = utils.capture_text_from_region(x, y, width, height, config)
       if extracted_text != "":
         print("extracted text: ",extracted_text)
         break
