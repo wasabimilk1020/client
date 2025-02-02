@@ -50,7 +50,7 @@ def get_account_list(sio):
       print("정보 클릭 실패")
       return
     
-    x, y, width, height = 1205, 330, 130, 45
+    x, y, width, height = 1205, 330, 130, 41
     config="--psm 7 -c preserve_interword_spaces=1"
     # 문자 추출 실행
     for i in range(5):

@@ -11,13 +11,23 @@ import hashlib
 import base64
 import get_account
 import serial_comm
+import json
+import logging
 
-# 마지막으로 pong을 받은 시간
-last_pong_time = None
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s") # 로깅 설정
+last_pong_time = None # 마지막으로 pong을 받은 시간
 PONG_TIMEOUT = 4  # 초 (pong 응답 대기 시간)
 
 character_list={}
 
+def load_json(json_file):
+  """JSON 파일 로드."""
+  try:
+    with open(json_file, "r", encoding="utf-8") as f:
+      return json.load(f)
+  except (FileNotFoundError, json.JSONDecodeError):
+    return {}  # 파일이 없거나 잘못된 JSON이면 빈 데이터 반환
+  
 # 작업 큐 생성
 task_queue = queue.Queue()
 
@@ -37,7 +47,6 @@ def process_tasks():
       continue  # 작업이 없으면 다시 대기
     except Exception as e:
       print(f"Error processing task: {e}")
-      # Error processing task: list index out of range (이런 에러가 나는데 왜 나지? 케릭 하나를 실행 해서 완료 후 다른 케릭 실행하면 이러네)
     
 # 작업 처리 스레드 시작
 worker_thread = threading.Thread(target=process_tasks, daemon=True)
@@ -49,8 +58,11 @@ sio = socketio.Client()
 @sio.event
 def connect():
   global last_pong_time
+  global character_list
   print('connection established')   
 
+  character_list=load_json("./character_list_json/character_list.json")
+  
   #서버가 다시 연결되었을 때 타이머 초기화 (이전 타이머 값이 남아있을 경우 방지)
   last_pong_time = time.time()
 
@@ -62,6 +74,7 @@ def connect():
 
 @sio.event
 def disconnect():
+  global last_pong_time
   print("서버와 연결 끊김")
   last_pong_time = None #퐁 타임 초기화화
   if serial_comm.ser.isOpen():
@@ -71,7 +84,10 @@ def disconnect():
 
 @sio.event
 def reqAccount(data):
+  global character_list
   character_list=get_account.get_account_list(sio)
+  with open("./character_list_json/character_list.json", "w", encoding="utf-8") as f:
+    json.dump(character_list, f, indent=4, ensure_ascii=False)
   sio.emit("revAccount", character_list)
 
 button_mapping={
@@ -97,8 +113,8 @@ button_mapping={
   "모두":button_func.switch_get_item,
   "고급":button_func.switch_get_item,
   "희귀":button_func.switch_get_item,
-  "40M":button_func.decomposeItem,
-  "제한없음":button_func.decomposeItem,
+  "40M":button_func.fourty,
+  "제한없음":button_func.unlimit,
   # "바람":button_func.decomposeItem,
   # "불":button_func.decomposeItem,
   # "물":button_func.decomposeItem,
@@ -109,6 +125,7 @@ button_mapping={
 
 @sio.event
 def button_schedule(data):
+  global character_list
 #emit_data={"버튼이름":[데이터],"character_list":{"아이디1":핸들 값1,"아이디2":핸들 값2}}
   for idx, (key, value) in enumerate(data.items()):
     if idx==0:
@@ -135,7 +152,6 @@ def recvImage(data):
   calculated_hash = hashlib.sha256(img.encode("utf-8")).hexdigest()
   # 해시 확인
   if hash_value==calculated_hash: 
-    print("데이터 무결성 확인 완료!")
     image_data = base64.b64decode(img)
     # 파일로 저장
     with open(f"./image_files/{file_name}", "wb") as f:
@@ -146,17 +162,17 @@ def recvImage(data):
 @sio.event
 def pong(data):
     global last_pong_time
-    print(f"Received pong from server: {data['time']}")
+    logging.info(f"Received pong from server: {data['time']}")
     last_pong_time = time.time()  # pong 수신 시 갱신
 
 def monitor_connection():
     global last_pong_time
     while True:
         if not sio.connected:
-            print("서버와의 연결이 끊겼습니다. 모니터링 중단.")
+            logging.warning("서버와의 연결이 끊겼습니다. 모니터링 중단.")
             break
         if last_pong_time and time.time() - last_pong_time > PONG_TIMEOUT:
-            print("서버 응답 없음, 연결 종료.")
+            logging.error("서버 응답 없음, 연결 종료.")
             sio.disconnect()  # 명시적으로 연결 종료
             break
         time.sleep(1)  # 1초마다 상태 확인
@@ -167,7 +183,7 @@ def send_ping():
         sio.emit("ping", {"time": current_time})
         time.sleep(2)
 
-sio.connect('http://121.191.160.160:426?computer_id=PC01') #클라이언트 세팅
+sio.connect('http://121.191.160.160:426?computer_id=PC03') #클라이언트 세팅
 
 sio.wait()
 

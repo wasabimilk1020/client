@@ -4,8 +4,6 @@ import utils
 import time
 import check_hunting
 
-value=check_hunting.checkHunting()  #value=성공 시="자동 사냥 중" or "스케줄 자동 진행 중", 실패 시=0
-if value!=0:
-    print("value: ",value)
-else:
-    print("멈춰있음")
+# result=utils.searchImg('diamondChk.png', beforeDelay=1, afterDelay=0, justChk=True, _region=(840,180,100,60))
+# x=x+result.width
+# print(x)

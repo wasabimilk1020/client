@@ -18,12 +18,13 @@ def mainLoop(sio, btn_func, func_data, id_handle, btn_name):
 
       utils.getWindow(handle) #윈도우 얻음
 
-      #절전해제 및 사망체크
-      result=waking_from_sleep_and_deathChk(btn_name)
-      if result==1: #사망 체크를 수행 했는대 chk.png가 확인 안되서 실패
-        sio.emit("logEvent",["페널티 체크 루틴 실패", character_name, ERR_MSG])
-        continue
-
+      if btn_name !="status_check_button":
+        #절전해제 및 사망체크
+        result=waking_from_sleep_and_deathChk(btn_name)
+        if result==1: #사망 체크를 수행 했는대 chk.png가 확인 안되서 실패
+          sio.emit("logEvent",["페널티 체크 루틴 실패", character_name, ERR_MSG])
+          continue
+     
       result=btn_func(sio, func_data, btn_name, character_name) #result[0]=성공여부, result[1]=메세지
       message=result[1]
 

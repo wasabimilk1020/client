@@ -3,55 +3,55 @@ import utils
 from serial_comm import *
 import re
 import check_hunting
+from waking_from_sleep import *
+from go_to_sleep import *
 
 #data=[1142, 375, 10, 10, 0.0]=[x,y,xRange,yRange,delay]
-def statusChk(sio, data,btn_name, character_name):
+def statusChk(sio, data, btn_name, character_name):
   coord=data
   delay=data[4]
   name=character_name
-  
+ 
   value=check_hunting.checkHunting() #value=성공 시=문자열, 실패 시=0
   if value!=0:  #성공
     text=value
     return 2, text
-  else: #실패 (사냥을 하지 않고 있다는 뜻뜻)
+  else: #실패 (사냥을 하지 않고 있다는 뜻)
+    result=waking_from_sleep_and_deathChk(btn_name)
+    if result==1: #사망 체크를 수행 했는대 chk.png가 확인 안되서 실패
+      sio.emit("logEvent",["페널티 체크 루틴 실패", character_name, ERR_MSG])
+    
     result=normalHunting(sio, data,btn_name, character_name)
     return result
 
 def normalHunting(sio, data,btn_name, character_name):
   coord=data
-  delay=data[4]
+  flag=data[4]
   name=character_name
+
+  if flag==1:
+    keyboard('7')
+    result_1=utils.searchImg('eventObj.png',beforeDelay=2, afterDelay=10, _region=(333,245,230,300)) 
+    #여기에 클릭 후 확인이라던지 있는지 없는지 확인 하고 더 만들어줘야함함
 
   keyboard('v')
 
-  result=utils.searchImg('schedule_in_progress.png',beforeDelay=1, afterDelay=1, justChk=True, _region=(930,320,200,200))
-  if(result==0):
-    result=utils.searchImg('schedule_start.png',beforeDelay=1, afterDelay=1, chkCnt=2, justChk=True,_region=(1200,790,200,200))
-    if(result==0):
-      result=utils.searchImg('clk_schedule_start.png',beforeDelay=1, afterDelay=3, chkCnt=2, _region=(1260,790,300,100))
-      if(result==0):
-        return 0, "스케쥴 시작 실패"
-    else:
-      result=utils.searchImg('memory_place.png',beforeDelay=1, afterDelay=1, _region=(320,400,200,150)) #기억장소 메뉴 클릭
-      if(result==0):
-        return 0, "기억장소 메뉴뉴 실패"
-      randClick(660,345,10,10,1)  #장소 클릭
-      for i in range(7):
-        randClick(1540,390,0,0,0) #시간 충전
-      result=utils.searchImg('clk_schedule_start.png',beforeDelay=1, afterDelay=3, _region=(1260,790,300,100))
-      if(result==0):
-        return 0, "스케쥴 시작 실패"
-  else:
-    randClick(1375,830,10,10,0) #스케쥴 중단
-    result=utils.searchImg('clk_schedule_start.png',beforeDelay=1, afterDelay=3, _region=(1260,790,300,100))
-    if(result==0):
+  result_1=utils.searchImg('memory_place.png',beforeDelay=0, afterDelay=0, _region=(320,400,200,150)) #기억장소 메뉴 클릭
+  if(result_1==0):
+    return 0, "기억장소 메뉴 실패"
+  utils.searchImg('stop_schedule.png',beforeDelay=0, afterDelay=0, chkCnt=2, _region=(1260,790,300,100))
+  result_2=utils.searchImg('schedule_reset.png',beforeDelay=0, afterDelay=0, chkCnt=2, justChk=True,_region=(1200,790,200,200))
+  if result_2!=0:
+    randClick(660,345,10,10,1)  #장소 클릭
+    for i in range(7):
+      randClick(1540,390,0,0,0) #시간 충전
+    result_3=utils.searchImg('clk_schedule_start.png',beforeDelay=0, afterDelay=1, _region=(1260,790,300,100))
+    if(result_3==0):
       return 0, "스케쥴 시작 실패"
-    
-  for i in range(5):
-    result=utils.searchImg('chk.png',beforeDelay=1, afterDelay=1, justChk=True,_region=(910,180,230,70))
-    if(result!=0):
-      break
+  if result_2==0:
+    result_3=utils.searchImg('clk_schedule_start.png',beforeDelay=0, afterDelay=1, _region=(1260,790,300,100))
+    if(result_3==0):
+      return 0, "스케쥴 시작 실패"
 
   utils.caputure_image(name, 387, 258, sio) #name, x, y, sio
   
@@ -64,9 +64,7 @@ def postBox(sio, data,btn_name, character_name):
   if(result==0):  
     return 0, "우편 모두받기 실패"
 
-  result=utils.searchImg('confirm.png',beforeDelay=1, afterDelay=1, accuracy=0.9, _region=(920,580,300,200))
-  if(result==0):  
-    return 0, "우편 확인 클릭 실패"
+  utils.searchImg('confirm.png',beforeDelay=1, afterDelay=1, accuracy=0.9, _region=(920,580,300,200))
 
   escKey()  #우편 나가기
   
@@ -75,91 +73,109 @@ def postBox(sio, data,btn_name, character_name):
 #---------던전---------#
 def dungeon(sio, data, btn_name, character_name):
   coord=data
-  delay=data[4]
+  charging=data[4]
   name=character_name
   
-  keyboard("`") #던전
-  
   if btn_name=="격전의섬":
+    for i in range(charging):
+      keyboard("2")
+      time.sleep(2)
+
+    keyboard("`") #던전
     # result=utils.searchImg('favorite.png', beforeDelay=1, afterDelay=1,  _region=(700, 230, 800, 120))  #즐겨찾기 클릭
 
     result=utils.searchImg('dungeonG.png',beforeDelay=1, afterDelay=1)
     if(result==0):
       return 0, "격전의 섬 클릭 실패"
 
-    result=utils.searchImg('dungeon_enter.png', beforeDelay=1, afterDelay=1, _region=(1200, 750, 400, 150))  #입장하기 
+    result=utils.searchImg('dungeon_enter.png', beforeDelay=0, afterDelay=0, _region=(1200, 750, 400, 150))  #입장하기 
     if(result==0):
       return 0, "격섬 입장 클릭 실패"
-    randClick(coord[0],coord[1],coord[2],coord[3],delay)  #층 클릭
+    randClick(coord[0],coord[1],coord[2],coord[3],1)  #층 클릭
 
   elif btn_name=="파괴된성채":
+    for i in range(charging):
+      keyboard("1")
+      time.sleep(2)
+
+    keyboard("`") #던전
     result=utils.searchImg('favorite.png', beforeDelay=1, afterDelay=1,  _region=(700, 230, 800, 120))  #즐겨찾기 클릭
 
     result=utils.searchImg('dungeonD.png',beforeDelay=1, afterDelay=1)
     if(result==0):
       return 0, "파괴된성채 클릭 실패"
 
-    result=utils.searchImg('dungeon_enter.png', beforeDelay=1, afterDelay=1, _region=(1200, 750, 400, 150))  #입장하기 
+    result=utils.searchImg('dungeon_enter.png', beforeDelay=0, afterDelay=0, _region=(1200, 750, 400, 150))  #입장하기 
     if(result==0):
       return 0, "파괴성 입장 클릭 실패"
-    randClick(coord[0],coord[1],coord[2],coord[3],delay)  #층 클릭
+    randClick(coord[0],coord[1],coord[2],coord[3],1)  #층 클릭
 
   elif btn_name=="크루마탑":
-    print(f"{btn_name} 실행") #임시
-    return 1, "message:None"
-    # # result=utils.searchImg('favorite.png', beforeDelay=1, afterDelay=1,  _region=(700, 230, 800, 120))  #즐겨찾기 클릭
+    # for i in range(charging):
+    #   keyboard("1")
+    #   time.sleep(2)
+    keyboard("`") #던전
+    result=utils.searchImg('favorite.png', beforeDelay=1, afterDelay=1,  _region=(700, 230, 800, 120))  #즐겨찾기 클릭
 
-    # result=utils.searchImg('cruma.png',beforeDelay=1, afterDelay=1)
-    # if(result==0):
-    #   return 0, "크루마탑 클릭 실패"
+    result=utils.searchImg('cruma.png',beforeDelay=1, afterDelay=1)
+    if(result==0):
+      return 0, "크루마탑 클릭 실패"
 
-    # result=utils.searchImg('dungeon_enter.png', beforeDelay=1, afterDelay=1, _region=(1200, 750, 400, 150))  #입장하기 
-    # if(result==0):
-    #   return 0, "크루마 입장 클릭 실패"
-    # # randClick(coord[0],coord[1],coord[2],coord[3],delay)  #층 클릭 (설정 해줘야함 json에서)
+    result=utils.searchImg('dungeon_enter.png', beforeDelay=0, afterDelay=0, _region=(1200, 750, 400, 150))  #입장하기
+    if(result==0):
+      return 0, "크루마 입장 클릭 실패"
+    randClick(coord[0],coord[1],coord[2],coord[3],1)  #층 클릭 
 
   elif btn_name=="안타라스":
     print(f"{btn_name} 실행") #임시
     return 1, "message:None"
+  
+    # for i in range(charging):
+    #     keyboard("1")
+    #     time.sleep(2)
+
+    # keyboard("`") #던전
     # result=utils.searchImg('favorite.png', beforeDelay=1, afterDelay=1,  _region=(700, 230, 800, 120))  #즐겨찾기 클릭
 
     # result=utils.searchImg('antaras.png',beforeDelay=1, afterDelay=1)
     # if(result==0):
     #   return 0, "안타라스 클릭 실패"
 
-    # result=utils.searchImg('dungeon_enter.png', beforeDelay=1, afterDelay=1, _region=(1200, 750, 400, 150))  #입장하기 
+    # result=utils.searchImg('dungeon_enter.png', beforeDelay=0, afterDelay=0, _region=(1200, 750, 400, 150))  #입장하기
     # if(result==0):
     #   return 0, "안타 입장 클릭 실패"
-    # # randClick(coord[0],coord[1],coord[2],coord[3],delay)  #층 클릭 (설정 해줘야함 json에서)
+    # # randClick(coord[0],coord[1],coord[2],coord[3],1)  #층 클릭 (설정 해줘야함 json에서)
 
   elif btn_name=="상아탑":
     print(f"{btn_name} 실행") #임시
     return 1, "message:None"
 
+    # keyboard("`") #던전
     # result=utils.searchImg('favorite.png', beforeDelay=1, afterDelay=1,  _region=(700, 230, 800, 120))  #즐겨찾기 클릭
 
     # result=utils.searchImg('sanga.png',beforeDelay=1, afterDelay=1)
     # if(result==0):
     #   return 0, "상아탑 클릭 실패"
 
-    # result=utils.searchImg('dungeon_enter.png', beforeDelay=1, afterDelay=1, _region=(1200, 750, 400, 150))  #입장하기 
+    # result=utils.searchImg('dungeon_enter.png', beforeDelay=0, afterDelay=0, _region=(1200, 750, 400, 150))  #입장하기
     # if(result==0):
     #   return 0, "상아탑 입장 클릭 실패"
-    # randClick(coord[0],coord[1],coord[2],coord[3],delay)  #층 클릭 (설정 해줘야함 json에서)
+    # randClick(coord[0],coord[1],coord[2],coord[3],1)  #층 클릭 (설정 해줘야함 json에서)
   elif btn_name=="이벤트던전":
     print(f"{btn_name} 실행") #임시
     return 1, "message:None"
 
+    # keyboard("`") #던전
     # # result=utils.searchImg('favorite.png', beforeDelay=1, afterDelay=1,  _region=(700, 230, 800, 120))  #즐겨찾기 클릭
 
     # result=utils.searchImg('eventDun.png',beforeDelay=1, afterDelay=1)
     # if(result==0):
     #   return 0, "이벤트던전 클릭 실패"
 
-    # result=utils.searchImg('dungeon_enter.png', beforeDelay=1, afterDelay=1, _region=(1200, 750, 400, 150))  #입장하기 
+    # result=utils.searchImg('dungeon_enter.png', beforeDelay=0, afterDelay=0, _region=(1200, 750, 400, 150))  #입장하기
     # if(result==0):
     #   return 0, "이벤트 입장 클릭 실패"
-    # # randClick(coord[0],coord[1],coord[2],coord[3],delay)  #층 클릭 (설정 해줘야함 json에서)
+    # # randClick(coord[0],coord[1],coord[2],coord[3],1)  #층 클릭 (설정 해줘야함 json에서)
   
   #이동 완료 체크
   result=utils.searchImg('chk.png', beforeDelay=1, afterDelay=1, justChk=True, chkCnt=10,_region=(910,180,230,70))
@@ -218,7 +234,7 @@ def decomposeItem(sio, data,btn_name, character_name):
   randClick(1395,730,10,10,0) #분해 목록 확인
   randClick(1321,735,5,5,0) #분해
 
-  utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, _region=(920,580,300,200))
+  utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, chkCnt=2, _region=(920,580,300,200))
   
   utils.caputure_image(name, 1280, 340, sio) #name, x, y, sio
 
@@ -236,7 +252,7 @@ def decomposeBook(sio, data,btn_name, character_name):
   randClick(1395,730,10,10,0) #분해 목록 확인
   randClick(1321,735,5,5,0) #분해
 
-  utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, _region=(920,580,300,200))
+  utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, chkCnt=2, _region=(920,580,300,200))
   
   utils.caputure_image(name, 1280, 340, sio) #name, x, y, sio
 
@@ -246,6 +262,7 @@ def deathChk(sio, data,btn_name, character_name):
   coord=data
   delay=data[4]
   name=character_name
+  utils.searchImg('confirm.png', beforeDelay=1, afterDelay=1, chkCnt=2, _region=(920,580,300,200))
 
   utils.caputure_image(name, 1145, 195, sio) #name, x, y, sio
 
@@ -256,15 +273,24 @@ def showDiamond(sio, data,btn_name, character_name):
   delay=data[4]
   name=character_name
 
-  x, y, width, height =  891, 190, 55, 35 #다이아몬드 범위
-  config="--psm 7 -c tessedit_char_whitelist=0123456789,"
-
   keyboard('x')
-  time.sleep(1.5)
+  # Box(left=880, top=196, width=25, height=27)
+  result_1=utils.searchImg('diamondChk_1.png', beforeDelay=1, afterDelay=0, justChk=True, _region=(840,180,100,60), accuracy=0.7)
+  result_2=utils.searchImg('diamondChk_2.png', beforeDelay=0, afterDelay=0, justChk=True, _region=(920,180,80,60), accuracy=0.7)
+  
+  if result_1!=0 and result_2!=0:
+    x=result_1.left+result_1.width
+    capture_width=result_2.left-x #끝나는 x좌표는 고정정
+    y, height = 190, 35 
+    config="--psm 7 -c tessedit_char_whitelist=0123456789,"
+    binary_val=150
 
-  text=utils.capture_text_from_region(x, y, width, height, config)
-  numbers = ''.join(re.findall(r'\d+', re.sub(r"[.,]", "", text)))  #문자와 , . 제거 후 숫자만 남김김
-  diamond=numbers
+    text=utils.capture_text_from_region(x, y, capture_width, height, config,binary_val)
+    print("text: ",text)
+    numbers = ''.join(re.findall(r'\d+', re.sub(r"[.,]", "", text)))  #문자와 , . 제거 후 숫자만 남김김
+    diamond=numbers
+  else:
+    return 0, "다이몬드 실패"
   
   escKey()  #나가기
 
@@ -291,11 +317,11 @@ def agasion(sio, data,btn_name, character_name):
   name=character_name
 
   keyboard("i")
-  randClick(1220,460,5,5,0)
+  randClick(1220,460,5,5,0) #왼쪽 메뉴 클릭
 
   while True:
-    randClick(1290,505,5,5,0)
-    randClick(1290,505,5,5,2)
+    randClick(1290,505,5,5,0) #첫 번째 카드 클릭
+    randClick(1290,505,5,5,1)
     result=utils.searchImg('agasionFirstChk.png', beforeDelay=1, afterDelay=1, justChk=True, _region=(800,750,300,200))
     if(result==0):
       break
@@ -303,7 +329,6 @@ def agasion(sio, data,btn_name, character_name):
       keyboard("y")
       time.sleep(1)
       keyboard("y")
-      result=utils.searchImg('agasionExit.png', beforeDelay=1, afterDelay=1, chkCnt=3,_region=(830,775,300,140))
       result=utils.searchImg('agasionExit.png', beforeDelay=1, afterDelay=1, chkCnt=3,_region=(830,775,300,140))
       if(result==1):
         break
@@ -371,9 +396,9 @@ def event_store(sio, data,btn_name, character_name):
 
   keyboard('7')
   
-  result=utils.searchImg('regina.png', beforeDelay=1, afterDelay=3, chkCnt=10)  #이미지 파일 evetn_store로 이름 바꾸자
+  result=utils.searchImg('event_store.png', beforeDelay=1, afterDelay=3, chkCnt=10)  #이미지 파일 evetn_store로 이름 바꾸자
   if(result==0):
-    return 0, "레지나 클릭 실패"
+    return 0, "이벤트상점 클릭 실패"
     
   result=utils.searchImg('dailyProduct.png', beforeDelay=1, afterDelay=1, chkCnt=30)  #이미지 파일 evetn_store로 이름 바꾸자
   if(result==0):
@@ -383,12 +408,11 @@ def event_store(sio, data,btn_name, character_name):
     randClick(490,465,10,10,0)
 
   randClick(1475,830,5,5,0) #구매 결정
-  randClick(1050,650,5,5,0)
+  randClick(1050,650,5,5,0) 
   escKey()
 
-  utils.caputure_image(name, 387, 258, sio) #name, x, y, sio
-
-  return 1, "message:None"
+  result=normalHunting(sio, data,btn_name, character_name)
+  return result
 
 #거리 40M
 def fourty(sio, data,btn_name, character_name):
@@ -494,12 +518,13 @@ def store(sio, data,btn_name, character_name):
   name=character_name
   #상점 클릭
   keyboard('u')
+  time.sleep(3)
   
-  result=utils.searchImg('adChk.png', beforeDelay=1, afterDelay=1, chkCnt=15,_region=(235,665,350,235))  #광고 체크 
+  result=utils.searchImg('adChk.png', beforeDelay=1, afterDelay=1, _region=(235,665,350,235))  #광고 체크 
   #광고 없으면 그냥 진행 (예외처리 필요 없음)
   
   #교환소 클릭
-  result=utils.searchImg('exchange.png', beforeDelay=1, afterDelay=1)
+  result=utils.searchImg('exchange.png', beforeDelay=0, afterDelay=1)
   if(result==0):
     escKey()
     return 0, "교환소 클릭 실패"
@@ -507,7 +532,7 @@ def store(sio, data,btn_name, character_name):
   randClick(1442, 850, 100, 10, 1)
 
   #품절 체크
-  result=utils.searchImg('soldoutChk.png', beforeDelay=1, afterDelay=2, chkCnt=3)
+  result=utils.searchImg('soldoutChk.png', beforeDelay=0, afterDelay=2, chkCnt=3)
   if(result==0):
     #취소 클릭
     randClick(837, 777, 100, 10, 1) 
@@ -515,8 +540,8 @@ def store(sio, data,btn_name, character_name):
     randClick(1533, 200, 20, 20, 1.5)
     return
 
-  #---레아의 성소 시작
-  randClick(1405, 415, 100, 10, 0.5)
+  #---레아의 성소 클릭릭
+  result=utils.searchImg('leah_castle.png', beforeDelay=1, afterDelay=1, accuracy=0.9, _region=(1360,370,200,100)) 
   #일괄 구매
   randClick(1442, 850, 100, 10, 0.5)
   #구매
@@ -541,11 +566,11 @@ def morning(sio, data,btn_name, character_name):
   name=character_name
 
   # 데일리 
-  daily(name, id,sio)
+  daily(sio, data,btn_name, character_name)
   # #혈맹 
-  guild(name, id,sio)
+  guild(sio, data,btn_name, character_name)
   #상점
-  store(name, id,sio)
+  store(sio, data,btn_name, character_name)
 
   utils.caputure_image(name, 387,258, sio) #name, x, y, sio
 
@@ -562,19 +587,23 @@ def seasonpass(sio, data,btn_name, character_name):
   x = 530
   for i in range(4):
     region = (x, 235, 100, 60)
-    result=utils.searchImg('dailyRedDotChk.png', beforeDelay=1, afterDelay=1,justChk=True, chkCnt=2, _region=region, accuracy=0.7)
-    if result:  # result가 None이 아닌 경우
+    result=utils.searchImg('dailyRedDotChk.png', beforeDelay=0, afterDelay=0,justChk=True, chkCnt=2, _region=region)
+    print("result: ",result)
+    if result:  # result가 0이 아닌 경우
       randClick(result.left-100, result.top+30,10,10,0)
       while(True):
-        result=utils.searchImg('getSeason.png', beforeDelay=1, afterDelay=0.5,_region=(1110,330,350,150))
+        result=utils.searchImg('getSeason.png', beforeDelay=0, afterDelay=1,_region=(1110,330,350,150))
         if(result==0):
           randClick(1325,825,10,10,0)
-          result=utils.searchImg('confirm.png', beforeDelay=1, afterDelay=0, _region=(920,580,300,200),accuracy=0.9)
+          result=utils.searchImg('confirm.png', beforeDelay=1, afterDelay=0, _region=(920,580,300,200))
           break
-    x += 230 #y축 80씩 증가
+    x += 245 #x축 증가
 
   utils.caputure_image(name, 1175,365, sio) #name, x, y, sio
   
   escKey()  #나가기
 
   return 1, "message:None"
+
+def gameStart(sio, data,btn_name, character_name):
+  pass
