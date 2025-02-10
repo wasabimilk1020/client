@@ -13,10 +13,14 @@ import get_account
 import serial_comm
 import json
 import logging
+import sys
+sys.path.append("./computer_restart")
+import computer_restart
+import game_exe
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s") # 로깅 설정
 last_pong_time = None # 마지막으로 pong을 받은 시간
-PONG_TIMEOUT = 4  # 초 (pong 응답 대기 시간)
+PONG_TIMEOUT = 8  # 초 (pong 응답 대기 시간)
 
 character_list={}
 
@@ -118,7 +122,6 @@ button_mapping={
   # "바람":button_func.decomposeItem,
   # "불":button_func.decomposeItem,
   # "물":button_func.decomposeItem,
-  # "게임실행":button_func.decomposeItem,
   "다이아":button_func.showDiamond,
 
 }
@@ -132,10 +135,10 @@ def button_schedule(data):
       button_name=key
       func_data=value
     elif idx==1:
-      if  value=={}:
-        id_handle=character_list
+      if  value=={}:  #statusChk
+        id_handle=list(character_list.items())
       else:
-        id_handle=value
+        id_handle=list(value.items())
   
   # 버튼에 해당하는 함수 가져오기
   print("버튼이름: ",button_name)
@@ -160,9 +163,17 @@ def recvImage(data):
     print("데이터가 손상되었거나 무결성 검증 실패!")
 
 @sio.event
+def reboot_computer(data):
+  computer_restart.run_bat_as_admin()
+
+@sio.event
+def game_start(data):
+  game_exe.start_game()
+
+@sio.event
 def pong(data):
     global last_pong_time
-    logging.info(f"Received pong from server: {data['time']}")
+    # logging.info(f"Received pong from server: {data['time']}")
     last_pong_time = time.time()  # pong 수신 시 갱신
 
 def monitor_connection():
@@ -183,7 +194,7 @@ def send_ping():
         sio.emit("ping", {"time": current_time})
         time.sleep(2)
 
-sio.connect('http://121.191.160.160:426?computer_id=PC03') #클라이언트 세팅
+sio.connect('http://121.191.160.160:426?computer_id=PC02') #클라이언트 세팅
 
 sio.wait()
 

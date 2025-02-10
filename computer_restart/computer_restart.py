@@ -1,7 +1,16 @@
 import subprocess
+import os
 
-bat_script = r"C:\경로\run_as_admin.bat"
+def run_bat_as_admin():
+    """배치 스크립트를 관리자 권한으로 실행하는 함수"""
+    bat_script = os.path.abspath("./computer_restart/run_as_admin.bat")  # 절대 경로 변환
 
-# 관리자 권한으로 실행
-subprocess.run(["cmd.exe", "/c", "start", "run_as_admin.bat"], shell=True)
+    if not os.path.exists(bat_script):  # 파일이 실제로 존재하는지 확인
+        print(f"오류: '{bat_script}' 파일을 찾을 수 없습니다.")
+        return
+
+    subprocess.run(["cmd.exe", "/c", "start", bat_script], shell=True)  # ✅ bat_script 사용
+
+
+
 

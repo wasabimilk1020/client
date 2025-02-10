@@ -1,9 +1,10 @@
 import pyautogui
 import sys
-import utils
+import client_utils
 import time
-import check_hunting
+from button_func import *
 
-# result=utils.searchImg('diamondChk.png', beforeDelay=1, afterDelay=0, justChk=True, _region=(840,180,100,60))
-# x=x+result.width
-# print(x)
+dict={"kim":"eunsu"}
+print(dict)
+dict["kim"]="은수"
+print(dict)

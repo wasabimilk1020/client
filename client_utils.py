@@ -56,12 +56,13 @@ def caputure_image(name,x,y,sio):
   sio.emit("captured_image",data)
 
 def getWindow(handle):
+
   # winKey()
   startClick(0,0,0,0,0)
   time.sleep(0.1)
   shell.SendKeys('%')
   try:
-        win32gui.SetForegroundWindow(handle)  # 창을 앞으로 가져오기 시도
+      win32gui.SetForegroundWindow(handle)  # 창을 앞으로 가져오기 시도
   except Exception as e:
       print(f"Error bringing window to foreground: {e}")
       return False 
@@ -77,16 +78,19 @@ def capture_text_from_region(x, y, width, height, _config, binary_val):
   binary_value=binary_val
   # 화면의 특정 영역 캡처
   bbox = (x, y, x + width, y + height)
-  screenshot = ImageGrab.grab(bbox)
-  # screenshot.save("origin.png")
-
+  try:
+    screenshot = ImageGrab.grab(bbox)
+    # screenshot.save("origin.png")
+  except Exception as e:
+    # print(f"ImageGrab 실행 중 오류 발생: {e}")
+    return 0, f"ImageGrab 실행 중 오류 발생: {e}"
   # 크기 키우기
   scaled = screenshot.resize((screenshot.width * 2, screenshot.height * 2), Image.Resampling.LANCZOS)
 
   # 전처리: 흑백 변환 및 대비 증가
   grayscale = scaled.convert("L")  # 흑백 이미지로 변환
   # grayscale.save("greyscale_img.png")
-  enhanced = ImageEnhance.Contrast(grayscale).enhance(2.5)  # 대비 조정
+  enhanced = ImageEnhance.Contrast(grayscale).enhance(2.0)  # 대비 조정
   # enhanced.save("enhanced_img.png")
   binary = enhanced.point(lambda x: 0 if x < binary_value else 255, '1')  # 이진화 처리
   # binary.save("binary_img.png")
@@ -96,7 +100,11 @@ def capture_text_from_region(x, y, width, height, _config, binary_val):
   # inverted_image.save("inverted_img.png")
 
   # OCR로 문자 추출
-  text = pytesseract.image_to_string(inverted_image, lang='kor',config=_config)  
+  try:
+    text = pytesseract.image_to_string(inverted_image, lang='kor',config=_config)  
+  except Exception as e:
+    # print(f"OCR 실행 중 오류 발생: {e}")
+    return 0, f"OCR 실행 중 오류 발생: {e}"
 
-  return text
+  return text, "capture_text 성공"
 

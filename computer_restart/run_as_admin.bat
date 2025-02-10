@@ -1,1 +1,1 @@
-powershell.exe -ExecutionPolicy Unrestricted -File ".\restart_script.ps1"
+powershell.exe -ExecutionPolicy Unrestricted -File ".\computer_restart\restart_script.ps1"
